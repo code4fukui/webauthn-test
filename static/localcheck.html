@@ -1,0 +1,78 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<title>WebAuthn localcheck</title>
+</head><body>
+<h1>WebAuthn localcheck</h1>
+<button id=btn_register>local test</button><br>
+
+<table>
+<tr><td>display_name</td><td><input id=user_displayName placeholder="user_displayName" value="test1_dname"></td></tr>
+<tr><td>name</td><td><input id=user_id placeholder="user_id" value="test1_id"></td></tr>
+<tr><td>id</td><td><input id=user_name placeholder="user_name" value="test1"></td></tr>
+</table>
+<textarea id=divauth></textarea>
+
+<script type="module">
+import { parseAttestationObject } from "./parseAttestationObject.js";
+
+export const registerCredential = async () => {
+  const publicKey = {
+    challenge: new Uint8Array(32),
+    rp: {
+      "name": "test_rp",
+      "id": "code4fukui.github.io",
+    },
+    user: {},
+    pubKeyCredParams: [
+      {
+        "type": "public-key",
+        "alg": -7
+      },
+      {
+        "type": "public-key",
+        "alg": -257
+      }
+    ],
+    timeout: 3 * 60 * 1000, // 3min
+    attestation: "none",
+    excludeCredentials: [],
+    authenticatorSelection: {
+      "authenticatorAttachment": "platform",
+      "userVerification": "required"
+    },
+    extensions: {
+      "credProps": true
+    },
+    allowCredentials: [],
+  };
+
+  // set user
+  const b = (s) => new TextEncoder().encode(s);
+  const user = publicKey.user;
+  user.displayName = b(user_displayName.value);
+  user.name = user_name.value;
+  user.id = b(user_id.value);
+  
+  const credential = await navigator.credentials.create({ publicKey });
+
+  const aobj = parseAttestationObject(credential.response.attestationObject);
+  console.log(aobj);
+  divauth.value = JSON.stringify(encodeHEX(aobj), null, 2);
+};
+btn_register.onclick = async () => {
+  const opt = await registerCredential();
+  console.log(opt);
+};
+</script>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+textarea {
+  width: 100%;
+  height: 40em;
+}
+</style>
+
+<hr>
+<a href=https://github.com/code4fukui/webauthn-test/>src on GitHub</a><br>
