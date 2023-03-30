@@ -1,3 +1,5 @@
+// forked from https://github.com/MasterKale/SimpleWebAuthn
+
 import { generateChallenge } from './generateChallenge.js';
 import { isoBase64URL, isoUint8Array } from './iso.js';
 
